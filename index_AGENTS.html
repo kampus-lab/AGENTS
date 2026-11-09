@@ -1,0 +1,599 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>AGENTS.inc Case Deck</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: full-screen click-through deck; one slide visible, header strip with case code, footer with controls + progress. Tone: an intelligence briefing (the firm sells monitoring agents). */
+:root{
+  --bg:#EEF1F3; --surface:#FFFFFF; --ink:#15212C; --muted:#56636E; --line:#D2D9DF;
+  --accent:#0B7A64; --accent-soft:#D6EEE7; --warn:#A95D17; --warn-soft:#F5E3D0;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Public Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F171E; --surface:#17222B; --ink:#E5EBEF; --muted:#94A2AD; --line:#2A3843;
+  --accent:#3CC4A2; --accent-soft:#12372F; --warn:#E39A55; --warn-soft:#3A2717; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F171E; --surface:#17222B; --ink:#E5EBEF; --muted:#94A2AD; --line:#2A3843;
+  --accent:#3CC4A2; --accent-soft:#12372F; --warn:#E39A55; --warn-soft:#3A2717; color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;overflow:hidden}
+.deck{height:100%;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.bar b{color:var(--accent);font-weight:500}
+.stage{flex:1;position:relative;min-height:0}
+.slide{position:absolute;inset:0;overflow-y:auto;display:none;
+  padding-block:clamp(20px,4vh,48px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.slide.on{display:block;animation:in .35s ease}
+@keyframes in{from{transform:translateY(8px)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.on{animation:none}}
+.inner{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:clamp(14px,2.4vh,24px)}
+.foot{display:flex;align-items:center;gap:12px;padding-block:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-top:1px solid var(--line)}
+.prog{flex:1;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+button.nav{font:600 14px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 14px;cursor:pointer}
+button.nav:hover{border-color:var(--accent);color:var(--accent)}
+button.nav:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.nav:disabled{opacity:.4;cursor:default}
+.count{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:56px;text-align:center}
+
+/* type */
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.08}
+h1{font-size:clamp(38px,6.4vw,76px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(26px,3.6vw,42px);font-weight:700;letter-spacing:-.01em}
+h3{font-size:clamp(17px,1.7vw,20px);font-weight:700}
+p{margin:0;max-width:68ch}
+.lead{font-size:clamp(17px,1.6vw,20px);color:var(--muted)}
+.small{font-size:14px;color:var(--muted)}
+ul.clean{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px}
+ul.clean li::marker{color:var(--accent)}
+.hl{color:var(--accent)}
+
+/* blocks */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.panel.dec{border-top:3px solid var(--warn)}
+.tag{align-self:flex-start;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+.tag.w{background:var(--warn-soft);color:var(--warn)}
+.ask{border-left:3px solid var(--warn);background:var(--warn-soft);padding:12px 16px;border-radius:0 6px 6px 0}
+.ask b{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:2px}
+.quote{font-family:var(--f-display);font-size:clamp(22px,2.6vw,30px);font-weight:500;line-height:1.25;border-left:3px solid var(--accent);padding-left:18px;max-width:30ch}
+.quote cite{display:block;font:500 13px var(--f-mono);color:var(--muted);margin-top:8px;font-style:normal}
+
+/* title slide */
+.cover{min-height:100%;display:flex;flex-direction:column;justify-content:center}
+.meta{display:flex;flex-wrap:wrap;gap:8px 24px;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.facts div{background:var(--surface);padding:14px 16px}
+.facts strong{display:block;font-family:var(--f-display);font-size:clamp(22px,2.6vw,32px);line-height:1.1;font-variant-numeric:tabular-nums}
+.facts span{font-size:13px;color:var(--muted)}
+@media (max-width:760px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* pipeline */
+.pipe{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.step{flex:1 1 140px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;position:relative;min-width:0}
+.step .n{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+.step h3{font-size:16px;margin:4px 0}
+.step p{font-size:14px;color:var(--muted)}
+.loop{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted);border:1px dashed var(--accent);border-radius:8px;padding:10px 14px}
+.loop b{color:var(--accent);font-family:var(--f-mono);font-size:18px}
+
+/* timeline */
+.tl{display:flex;flex-direction:column;border-left:2px solid var(--line);margin-left:6px}
+.tl div{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;padding:7px 0 7px 16px;position:relative}
+.tl div::before{content:"";position:absolute;left:-6px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.tl div.key::before{background:var(--warn);border-color:var(--warn)}
+.tl time{font-family:var(--f-mono);font-size:14px;color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* tables & bars */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.num,th.num{text-align:right}
+.bars{display:flex;flex-direction:column;gap:12px}
+.brow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:center;font-size:14px}
+.btrack{display:flex;flex-direction:column;gap:3px}
+.b{height:14px;border-radius:2px;background:var(--accent);position:relative}
+.b.y2{background:var(--warn)}
+.bval{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+@media (max-width:560px){.brow{grid-template-columns:1fr}}
+
+/* stacked license chart */
+.lic{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end;height:200px}
+.lic .col{display:flex;flex-direction:column;height:100%;justify-content:flex-end;gap:2px;text-align:center}
+.lic .p{background:var(--accent);border-radius:2px 2px 0 0;color:var(--surface);font:500 11px var(--f-mono);display:flex;align-items:flex-start;justify-content:center;padding-top:3px}
+.lic .c{background:var(--warn);color:var(--surface);font:500 11px var(--f-mono);display:flex;align-items:flex-start;justify-content:center;padding-top:3px}
+.lic .yr{font:500 12px var(--f-mono);color:var(--muted);margin-top:4px}
+
+.spectrum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.spectrum div{padding:14px 16px;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-width:0}
+.spectrum div:last-child{border-right:0}
+.spectrum .lab{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.arrow-row{display:flex;justify-content:space-between;font:500 12px var(--f-mono);color:var(--muted)}
+@media (max-width:760px){.spectrum{grid-template-columns:1fr}.spectrum div{border-right:0;border-bottom:1px solid var(--line)}}
+
+.roles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:860px){.roles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.roles{grid-template-columns:1fr}}
+.hint{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+@media (max-width:560px){.hint{display:none}}
+</style>
+
+<div class="deck">
+  <div class="bar"><span><b>HBS 9-724-444</b> · Student guide</span><span id="sname">AGENTS.inc</span></div>
+  <main class="stage" id="stage">
+
+  <!-- 1 -->
+  <section class="slide" data-name="Cover">
+    <div class="inner cover">
+      <span class="eyebrow">Student case guide · Agentic AI in business</span>
+      <h1>AGENTS.inc: Pathways to Growth at an <span class="hl">AI&nbsp;Startup</span></h1>
+      <p class="lead">A four-person Berlin firm that has built AI agents since 2017 must decide how to grow before well-funded rivals take the market. This guide walks you through the case in plain language, so you can follow the full reading and come to class ready to argue a position.</p>
+      <div class="grid g3">
+        <div class="panel"><span class="tag">Time needed</span><p>About 15 minutes to go through this guide</p></div>
+        <div class="panel"><span class="tag">Then</span><p>Read the full case, focusing on the exhibits</p></div>
+        <div class="panel"><span class="tag w">Before class</span><p>Prepare your answers on the last two slides</p></div>
+      </div>
+      <div class="meta"><span>Frank Nagle, Manuel Hoffmann, Karoline Ströhlein, Susan Pinckney</span><span>Harvard Business School · rev. Jan 2025</span></div>
+      <div class="facts">
+        <div><strong>2024</strong><span>Decision year</span></div>
+        <div><strong>4</strong><span>Full-time employees</span></div>
+        <div><strong>€0</strong><span>Venture capital raised</span></div>
+        <div><strong>Profitable</strong><span>Funded by customers</span></div>
+      </div>
+      <p class="hint">Use ← → keys, the buttons below, or swipe</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide" data-name="The situation">
+    <div class="inner">
+      <span class="eyebrow">01 · The situation, January 2024</span>
+      <h2>An early mover suddenly has company</h2>
+      <div class="grid g2">
+        <div class="panel">
+          <span class="tag">Who</span>
+          <p>Married co-founders <b>Tatjana Samsonowa</b> (CEO; ex-SAP researcher, PhD in information systems, former professor) and <b>Sebastian Denef</b> (CTO &amp; product; ex-Fraunhofer researcher, PhD in industrial design).</p>
+        </div>
+        <div class="panel">
+          <span class="tag">What they sell</span>
+          <p>AI agents that do knowledge work: they monitor news, competitors, partners, patents and regulation, and deliver verified reports, alerts and dashboards.</p>
+        </div>
+        <div class="panel">
+          <span class="tag">Track record</span>
+          <p>First enterprise client in 2020. Customers include Porsche, Brazil's Petrobras and the German Federal Ministry of Labor.</p>
+        </div>
+        <div class="panel">
+          <span class="tag w">The problem</span>
+          <p>ChatGPT's launch in late 2022 made "AI agents" a hot category. VC-backed startups and big tech are moving in, and the founders believe the platform choice will be settled within about two years.</p>
+        </div>
+      </div>
+      <div class="quote">“You are either the platform people use, or you are not.”<cite>Sebastian Denef, co-founder</cite></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" data-name="Three decisions">
+    <div class="inner">
+      <span class="eyebrow">02 · What the founders must decide</span>
+      <h2>Three linked decisions</h2>
+      <div class="grid g3">
+        <div class="panel dec"><span class="tag w">Decision 1</span><h3>Open source?</h3><p>Should they release part of their technology as open source software? Which part, and under what licence, so the company still makes money?</p></div>
+        <div class="panel dec"><span class="tag w">Decision 2</span><h3>Funding</h3><p>They need a seed round to keep pace with VC-backed rivals. How much, and how will the open-source choice affect what investors think?</p></div>
+        <div class="panel dec"><span class="tag w">Decision 3</span><h3>Business model</h3><p>Keep selling agent contracts to large companies, or bet on an agent store and platform that others build on?</p></div>
+      </div>
+      <p class="lead">The decisions pull against each other: what helps build a developer community may worry enterprise customers and change which investors are interested.</p>
+      <div class="ask"><b>As you read</b>Keep these three decisions in mind. Every slide that follows gives you evidence for one or more of them, so note which way each fact pushes.</div>
+    </div>
+  </section>
+
+  <!-- 3b glossary -->
+  <section class="slide" data-name="Key terms">
+    <div class="inner">
+      <span class="eyebrow">Glossary · terms you will meet in the case</span>
+      <h2>Key terms in plain language</h2>
+      <div class="grid g2">
+        <div class="panel"><span class="tag">LLM (large language model)</span><p>The AI engine behind tools like ChatGPT. It predicts and generates text.</p></div>
+        <div class="panel"><span class="tag">Hallucination</span><p>When an AI states something false with confidence.</p></div>
+        <div class="panel"><span class="tag">On-premises</span><p>Software and data run on the customer's own servers instead of a vendor's cloud.</p></div>
+        <div class="panel"><span class="tag">Tokens (as pricing)</span><p>Credits a customer buys in advance and spends each time an agent does a task.</p></div>
+        <div class="panel"><span class="tag">Open source software (OSS)</span><p>Software whose code is public, so anyone can read, change and reuse it.</p></div>
+        <div class="panel"><span class="tag">Licence</span><p>The legal terms that say what others may do with the code, e.g. whether they can sell it.</p></div>
+        <div class="panel"><span class="tag">SDK (software development kit)</span><p>A free toolkit that lets outside developers build on a company's platform.</p></div>
+        <div class="panel"><span class="tag">Seed round / VC</span><p>A startup's first outside funding, usually from venture capital firms that take shares in return.</p></div>
+        <div class="panel"><span class="tag">Platform / network effects</span><p>A platform gets more valuable as more users and builders join, like an app store.</p></div>
+        <div class="panel"><span class="tag">B2B</span><p>Business-to-business: selling to companies rather than to consumers.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide" data-name="What is an AI agent?">
+    <div class="inner">
+      <span class="eyebrow">03 · Concept</span>
+      <h2>What the case means by an “AI agent”</h2>
+      <p class="lead">A program that receives a goal, makes its own decisions, and takes actions to reach it, without a human re-prompting it at each step.</p>
+      <div class="grid g2">
+        <div class="panel"><span class="tag">Generative AI (chatbot)</span><p>Suggests a travel itinerary or a restaurant.</p><p class="small">You still do the booking. Each new step needs a new prompt.</p></div>
+        <div class="panel"><span class="tag">AI agent</span><p>Books the flight and orders the food, then checks its own results.</p><p class="small">Agents can run tasks in parallel, hand work to other agents and combine the results.</p></div>
+      </div>
+      <div class="ask"><b>Think about it</b>Pick a task you do every week that takes several apps and several steps, such as planning a trip or preparing a group assignment. Which steps could an agent do for you, and which would you still want to check yourself?</div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide" data-name="How an agent works">
+    <div class="inner">
+      <span class="eyebrow">04 · Case Exhibit 1, simplified</span>
+      <h2>How an AGENTS.inc agent works</h2>
+      <div class="pipe">
+        <div class="step"><span class="n">1</span><h3>Goal</h3><p>A user sets a standing task, e.g. “Watch my competitors.”</p></div>
+        <div class="step"><span class="n">2</span><h3>Gather data</h3><p>Pulls the client's internal data plus validated public sources.</p></div>
+        <div class="step"><span class="n">3</span><h3>Pick models</h3><p>Chooses which AI models to use: LLMs, sentiment, entity recognition and others.</p></div>
+        <div class="step"><span class="n">4</span><h3>Sort output</h3><p>Compares and groups what the different models return.</p></div>
+        <div class="step"><span class="n">5</span><h3>Validate</h3><p>Checks results against the data and adds citations.</p></div>
+        <div class="step"><span class="n">6</span><h3>Report</h3><p>Sends reports, alerts and live dashboards.</p></div>
+      </div>
+      <div class="loop"><b>↺</b><span>The agent keeps monitoring the goal and repeats the cycle. It can also ask a helper agent (for example, a news agent) to work on part of the task.</span></div>
+      <p class="small">Why no known hallucinations, according to the company: each prompt carries so much context that the model has little room to invent things.</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" data-name="AI vocabulary">
+    <div class="inner">
+      <span class="eyebrow">05 · Background from the case</span>
+      <h2>A quick map of AI terms</h2>
+      <div class="grid g2">
+        <div class="panel"><span class="tag">By capability</span>
+          <ul class="clean"><li><b>Narrow (“weak”) AI</b>: trained for one task. Everything in use today.</li><li><b>Artificial general intelligence</b>: a wide range of tasks at human level or above.</li><li><b>Super AI</b>: theoretical; would reason and learn beyond humans.</li></ul></div>
+        <div class="panel"><span class="tag">By functionality</span>
+          <ul class="clean"><li><b>Reactive</b>: no memory, one fixed task.</li><li><b>Limited memory</b>: recalls past data. LLMs, Siri, self-driving cars.</li><li><b>Theory of mind</b> and <b>self-aware</b>: theoretical future stages.</li></ul></div>
+      </div>
+      <div class="pipe">
+        <div class="step"><span class="n">1950s</span><h3>AI research begins</h3><p>Slow uptake in industry.</p></div>
+        <div class="step"><span class="n">2012</span><h3>Deep learning</h3><p>Adoption speeds up.</p></div>
+        <div class="step"><span class="n">2022</span><h3>ChatGPT</h3><p>Generative AI goes mainstream.</p></div>
+        <div class="step"><span class="n">2024</span><h3>Agents</h3><p>Models act and decide, not just answer.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" data-name="Company history">
+    <div class="inner">
+      <span class="eyebrow">06 · Company history</span>
+      <h2>Twenty years from scholarship rivals to agent company</h2>
+      <div class="tl">
+        <div><time>2003</time><span>Samsonowa and Denef meet competing for the same scholarship; both win it.</span></div>
+        <div><time>2013</time><span>Denef co-founds UBERBLIK, a government-funded Fraunhofer spinoff building a collaboration tool that would one day include agent “colleagues.”</span></div>
+        <div><time>2016</time><span>Grant money ends and the other co-founders leave. Samsonowa buys Fraunhofer's shares. They win an SAP startup competition.</span></div>
+        <div><time>2017</time><span>Rebrand to OWN, with a focus on owning your data. First agent built: a news processor.</span></div>
+        <div><time>2018</time><span>Win a €250,000 prize from energy company E.On, which takes a 13% stake. Denef goes full-time.</span></div>
+        <div><time>2019</time><span>Hackathon in Innopolis, Russia, tests agent ideas and recruits future developers.</span></div>
+        <div><time>2020</time><span>COVID-19 drives demand. First enterprise client. Samsonowa joins full-time.</span></div>
+        <div><time>2021</time><span>Rebrand to AGENTS.inc.</span></div>
+        <div class="key"><time>2024</time><span>Profitable, four employees, no VC money, and three strategic decisions to make.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide" data-name="Crises create customers">
+    <div class="inner">
+      <span class="eyebrow">07 · A pattern in the case</span>
+      <h2>Each crisis brought new customers</h2>
+      <div class="grid g3">
+        <div class="panel"><span class="tag">2020 · COVID-19</span><h3>Pharma supply chains</h3><p>A Fortune 500 pharmaceutical company, reached through an SAP contact, used agents to evaluate new suppliers and partners.</p></div>
+        <div class="panel"><span class="tag">2020–22 · Brazil</span><h3>Petrobras politics</h3><p>After a change of government pushed the state oil company toward renewables, agents tracked every relevant speech, news item and post. Reporting went from daily to every 10 minutes.</p></div>
+        <div class="panel"><span class="tag">2022 · Ukraine war</span><h3>Supply and regulation</h3><p>Companies facing sudden shifts in suppliers, rules and public relations signed up.</p></div>
+      </div>
+      <div class="ask"><b>Think about it</b>Why is an always-on monitoring agent most valuable when the world is unstable? If most new customers arrive because of a crisis, is that a strength or a risk for the business?</div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide" data-name="The agent store">
+    <div class="inner">
+      <span class="eyebrow">08 · Product</span>
+      <h2>Agents “hired” from a store</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Agent</th><th>What it does</th><th>Company's own claim</th></tr></thead>
+        <tbody>
+          <tr><td>News monitoring</td><td>Tracks global news and social media for chosen keywords</td><td>Gives the essentials, not a list of links</td></tr>
+          <tr><td>Company identification</td><td>Finds potential partners by requirement and region</td><td>1,000× faster, 100× cheaper than manual search</td></tr>
+          <tr><td>Patent analysis</td><td>Maps a firm's technology to patent classes and relevant patents</td><td>3,600× faster than traditional patent search</td></tr>
+          <tr><td>Report</td><td>Combines other agents' output with client data such as reviews and competitor analyses</td><td>Extracts key insights</td></tr>
+          <tr><td>Scientific knowledge</td><td>Writes research summaries and finds experts</td><td>Draws on 200M+ publications</td></tr>
+          <tr><td>EU policy watch</td><td>Monitors governments, officials and sentiment in each member state's language</td><td>Built first for Petrobras, then reused</td></tr>
+        </tbody></table></div>
+      <p class="small">Pricing: clients buy token subscriptions. Each agent estimates what a task will cost in searches and page reviews and charges tokens for it. The team expects to need dynamic pricing later.</p>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide" data-name="Differentiators">
+    <div class="inner">
+      <span class="eyebrow">09 · Competitive advantage</span>
+      <h2>Why customers chose a tiny startup</h2>
+      <div class="grid g3">
+        <div class="panel"><h3>Many models, not one</h3><p>Each task runs through several AI models and the results are compared. Customers don't want to depend on a single provider.</p></div>
+        <div class="panel"><h3>Data stays at home</h3><p>Agents can run on the client's own servers. The Bavarian state police required this, and German firms value it highly.</p></div>
+        <div class="panel"><h3>Built for ordinary employees</h3><p>An agent can be set up in three clicks, with no IT department or consultant needed.</p></div>
+        <div class="panel"><h3>Verified and cited</h3><p>Every report carries sources, and the agents comply with EU privacy rules.</p></div>
+        <div class="panel"><h3>Tailored</h3><p>Agents are configured to each client's industry and use case.</p></div>
+        <div class="panel"><h3>Persistence</h3><p>As a small vendor, they made themselves indispensable so clients would take the risk.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide" data-name="The numbers">
+    <div class="inner">
+      <span class="eyebrow">10 · Case Exhibits 2 &amp; 3</span>
+      <h2>Small revenue, one large anchor deal</h2>
+      <div class="grid g2">
+        <div class="panel">
+          <span class="tag">Financials (€)</span>
+          <div class="legend"><span><i style="background:var(--accent)"></i>2021</span><span><i style="background:var(--warn)"></i>2022</span></div>
+          <div class="bars">
+            <div class="brow"><span>Revenue</span><div class="btrack"><div class="b" style="width:61.6%"></div><span class="bval">162,000</span><div class="b y2" style="width:95.2%"></div><span class="bval">250,322</span></div></div>
+            <div class="brow"><span>Other income</span><div class="btrack"><div class="b" style="width:33.5%"></div><span class="bval">88,180</span><div class="b y2" style="width:33.6%"></div><span class="bval">88,487</span></div></div>
+            <div class="brow"><span>Personnel cost</span><div class="btrack"><div class="b" style="width:65.3%"></div><span class="bval">171,881</span><div class="b y2" style="width:100%"></div><span class="bval">263,026</span></div></div>
+            <div class="brow"><span>Net income</span><div class="btrack"><div class="b" style="width:12%"></div><span class="bval">31,653</span><div class="b y2" style="width:1.6%;min-width:3px"></div><span class="bval">4,317</span></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <span class="tag">Petrobras contract (2024)</span>
+          <ul class="clean">
+            <li>Won an international bid in 2022, then a successful pilot</li>
+            <li>Two-year contract with an option for two more</li>
+            <li><b>200</b> initial users</li>
+            <li><b>$300,000</b> in year one, more than the firm's entire 2022 revenue</li>
+          </ul>
+          <p class="small">Petrobras context: Brazil's largest company, about 45,500 employees, $98B market cap.</p>
+        </div>
+      </div>
+      <div class="ask"><b>Spot this</b>In 2022, net income was only €4,317, while “other income” (money not from selling agents) was about €88,000. Without that other income the firm would have made a loss. What does this tell you about how strong the core business really is?</div>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide" data-name="Market and rivals">
+    <div class="inner">
+      <span class="eyebrow">11 · Market &amp; competition</span>
+      <h2>A booming market fills up fast</h2>
+      <div class="facts">
+        <div><strong>$136.5B</strong><span>Global AI market, 2022</span></div>
+        <div><strong>37.3%</strong><span>Projected annual growth to 2030</span></div>
+        <div><strong>$50B+</strong><span>VC into AI startups, 2023</span></div>
+        <div><strong>31</strong><span>Big firms that could enter quickly</span></div>
+      </div>
+      <div class="grid g3">
+        <div class="panel"><span class="tag">VC-backed startups</span><p>SuperAGI (open source, US, 2023), Adept, Imbue, Luda.</p></div>
+        <div class="panel"><span class="tag">Big tech</span><p>AWS, Google, Hugging Face, IBM, Oracle, SAP; Microsoft Copilot; Google positioning its Assistant as more agent-like.</p></div>
+        <div class="panel"><span class="tag w">OpenAI's store</span><p>Planned for early 2024. The founders weren't worried: German firms won't send their data or queries to OpenAI and won't trust one model.</p></div>
+      </div>
+      <p class="small">Also squeezed: talent. The war cut off a key supply of software developers from Russia and Ukraine.</p>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide" data-name="Trust and regulation">
+    <div class="inner">
+      <span class="eyebrow">12 · Headwinds</span>
+      <h2>Trust is the missing ingredient</h2>
+      <div class="grid g2">
+        <div class="panel"><span class="tag">Public opinion (US)</span>
+          <div class="bars">
+            <div class="brow"><span>More concerned than excited, 2021</span><div class="btrack"><div class="b" style="width:37%"></div><span class="bval">37%</span></div></div>
+            <div class="brow"><span>More concerned than excited, 2023</span><div class="btrack"><div class="b y2" style="width:52%"></div><span class="bval">52%</span></div></div>
+            <div class="brow"><span>Want AI regulated, 2023</span><div class="btrack"><div class="b y2" style="width:72%"></div><span class="bval">72%</span></div></div>
+          </div>
+        </div>
+        <div class="panel"><span class="tag">Open questions</span>
+          <ul class="clean"><li>Privacy, data security, model bias, transparency</li><li>The EU AI Act and the US AI Bill of Rights were still under review</li><li>Chatbot hallucinations made buyers wary of agents</li><li>Agent quality varied widely between vendors</li></ul>
+        </div>
+      </div>
+      <div class="ask"><b>Think about it</b>Imagine you manage a team at a large company. What proof would you need before letting an agent act on your company's behalf?</div>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide" data-name="Open source primer">
+    <div class="inner">
+      <span class="eyebrow">13 · Concept: open source software</span>
+      <h2>Free as in freedom, not as in price</h2>
+      <div class="grid g2">
+        <div class="panel">
+          <p>Open source software ships with its readable source code, so anyone can study, modify, fix and share it. Examples: Linux, Android, Firefox, the Apache web server.</p>
+          <ul class="clean"><li><b>Copyleft</b> (e.g. GNU GPL): changes must stay open; limits making it proprietary</li><li><b>Permissive</b> (e.g. MIT): anyone can use it for anything, including commercial products</li></ul>
+          <p class="small">By 2023, 96% of codebases contained open source. Red Hat sold its open-source OS to over 90% of the Fortune 500. Microsoft paid $7.5B for GitHub.</p>
+        </div>
+        <div class="panel">
+          <span class="tag">Licences: share of new open source projects</span>
+          <div class="legend"><span><i style="background:var(--accent)"></i>Permissive</span><span><i style="background:var(--warn)"></i>Copyleft</span></div>
+          <div class="lic" role="img" aria-label="Permissive licences grew from 41% in 2012 to 78% in 2021, while copyleft fell from 59% to 22%">
+            <div class="col"><div class="p" style="height:41%">41</div><div class="c" style="height:59%">59</div><span class="yr">'12</span></div>
+            <div class="col"><div class="p" style="height:55%">55</div><div class="c" style="height:45%">45</div><span class="yr">'16</span></div>
+            <div class="col"><div class="p" style="height:59%">59</div><div class="c" style="height:41%">41</div><span class="yr">'17</span></div>
+            <div class="col"><div class="p" style="height:64%">64</div><div class="c" style="height:36%">36</div><span class="yr">'18</span></div>
+            <div class="col"><div class="p" style="height:67%">67</div><div class="c" style="height:33%">33</div><span class="yr">'19</span></div>
+            <div class="col"><div class="p" style="height:76%">76</div><div class="c" style="height:24%">24</div><span class="yr">'20</span></div>
+            <div class="col"><div class="p" style="height:78%">78</div><div class="c" style="height:22%">22</div><span class="yr">'21</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid g2">
+        <div class="panel"><span class="tag">Benefits</span><p>Lower cost, faster development, interoperability, outside review of security, a community that improves the product.</p></div>
+        <div class="panel"><span class="tag w">Drawbacks</span><p>Harder to differentiate, harder to monetise, needs an active community, and enterprises ask who supports it and who is accountable.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide" data-name="Decision 1: open source">
+    <div class="inner">
+      <span class="eyebrow">14 · Decision 1</span>
+      <h2>What to open, and how far</h2>
+      <div class="grid g3">
+        <div class="panel dec"><span class="tag w">Option A</span><h3>Agent-building kit</h3><p>Let anyone build their own agents. Could be a free SDK rather than true open source, like Apple's developer tools.</p></div>
+        <div class="panel dec"><span class="tag w">Option B</span><h3>“Linux for agents”</h3><p>Open the runtime that runs agents. Big global reach; work out the business model later.</p></div>
+        <div class="panel dec"><span class="tag w">Option C</span><h3>Store infrastructure</h3><p>Open the marketplace itself. Very complex, and Apple and Google keep their stores closed.</p></div>
+      </div>
+      <div>
+        <div class="spectrum">
+          <div><span class="lab">Most control</span><h3>Restrictive custom licence</h3><p class="small">Free for students and internal use; no competing stores; limits by company size or use case.</p></div>
+          <div><span class="lab">Middle</span><h3>Free SDK, closed core</h3><p class="small">Developers build agents; the platform and store stay proprietary.</p></div>
+          <div><span class="lab">Most reach</span><h3>MIT licence for everything</h3><p class="small">The “big, bold step.” Anyone can use it commercially. Is there a community, and how does the firm earn money?</p></div>
+        </div>
+      </div>
+      <div class="grid g2">
+        <div class="panel"><span class="tag">For</span><p>Clients want to run the platform themselves, like WordPress for agents. The team loves open source, and the world will need more niche agents than four people can build.</p></div>
+        <div class="panel"><span class="tag w">Against</span><p>Big firms may hear “open source” as risk. There are no resources to build a community, and the technology is complex to set up.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide" data-name="Decision 2: funding">
+    <div class="inner">
+      <span class="eyebrow">15 · Decision 2</span>
+      <h2>Raise $5 million or $50 million?</h2>
+      <div class="grid g2">
+        <div class="panel dec"><span class="tag w">$5M plan</span><p>Build sales and marketing, hire developers, start scaling the current business.</p></div>
+        <div class="panel dec"><span class="tag w">$50M plan</span><p>Needed if the bet is on the agent store. Samsonowa is talking to both kinds of investors.</p></div>
+      </div>
+      <div class="grid g3">
+        <div class="panel"><h3>Customer-first culture</h3><p>Profitable and grown on customer revenue; the CEO prefers proving value over borrowing.</p></div>
+        <div class="panel"><h3>German context</h3><p>Investors favour thoroughly tested, reliable products over speed to market. US investors take more risk.</p></div>
+        <div class="panel"><h3>Network gap</h3><p>No serial founder who can call investors and raise quickly. Denef believes the idea itself could attract $100M.</p></div>
+      </div>
+      <p class="lead">Link to Decision 1: a small group of VCs specialises in open-source companies. Going open source changes which investors will listen, and on what terms.</p>
+      <div class="ask"><b>Think about it</b>Investors take a share of the company in return for money. Why might founders of a profitable firm hesitate to raise money at all? What do they risk by not raising?</div>
+    </div>
+  </section>
+
+  <!-- 17 -->
+  <section class="slide" data-name="Decision 3: platform or B2B">
+    <div class="inner">
+      <span class="eyebrow">16 · Decision 3</span>
+      <h2>Stay a B2B vendor or become the platform?</h2>
+      <div class="grid g2">
+        <div class="panel"><span class="tag">B2B contracts (today)</span>
+          <ul class="clean"><li>Proven revenue from large clients</li><li>Full control over quality</li><li>Plan for 2024: grow monthly revenue, more agents per client, add smaller clients</li><li>Focus narrowly on corporate intelligence, where verified results matter</li></ul></div>
+        <div class="panel"><span class="tag w">Agent store &amp; platform</span>
+          <ul class="clean"><li>Store revenue is low today</li><li>Unknown whether the market will be winner-take-all, like app stores</li><li>Network effects could reward the first big platform</li><li>Must vet every third-party agent, and control passes to many hands</li><li>Vision: ready-made data on every company and news source</li></ul></div>
+      </div>
+      <p class="small">Cost pressure: matching data and comparing models means about a million web requests where a typical AI use makes hundreds, so data collection and storage grow in importance.</p>
+      <div class="ask"><b>Think about it</b>Compare with app stores you use. Apple and Google control theirs and earn from every app. What would AGENTS.inc need to make a store work, and could a four-person firm manage it?</div>
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section class="slide" data-name="Class exercise">
+    <div class="inner">
+      <span class="eyebrow">17 · Prepare before class</span>
+      <h2>Pick a seat and prepare your argument</h2>
+      <p class="lead">In class you may be asked to argue from one of these four points of view. Choose one now and note how that person would see the three decisions.</p>
+      <div class="roles">
+        <div class="panel"><span class="tag">Founders</span><p>We want to become the global agent platform without losing control or profitability.</p></div>
+        <div class="panel"><span class="tag">Enterprise CIO</span><p>We need data on-premises, accountability and support. Who do we blame if it fails?</p></div>
+        <div class="panel"><span class="tag">Venture capitalist</span><p>Show us a path to a very large market. Is open source a moat or a giveaway?</p></div>
+        <div class="panel"><span class="tag">Developer community</span><p>What do we get for building agents on your platform, and can we trust the licence?</p></div>
+      </div>
+      <div class="ask"><b>Your task</b>Write down one recommendation in four lines: (1) what to open source, if anything (A, B, C or nothing), (2) which licence, (3) how much to raise, and (4) B2B or platform. Add one reason for each, using a fact from the case. Be ready to defend it in two minutes.</div>
+    </div>
+  </section>
+
+  <!-- 19 -->
+  <section class="slide" data-name="Discussion questions">
+    <div class="inner">
+      <span class="eyebrow">18 · Come ready to answer</span>
+      <h2>Questions for the case discussion</h2>
+      <p class="lead">Jot down a short answer to each. There is no single right answer; what matters is backing your view with evidence from the case.</p>
+      <ol class="clean" style="margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:10px;font-size:17px">
+        <li>How is an AGENTS.inc agent different from asking ChatGPT the same question?</li>
+        <li>Which of its advantages (multiple models, on-premises data, citations, ease of use) can big tech copy most easily, and which are hardest to copy?</li>
+        <li>Should AGENTS.inc release any of its software as open source? If so, which part and under which licence?</li>
+        <li>How will that choice affect enterprise customers and potential investors?</li>
+        <li>Should they focus on B2B contracts or on building the agent store?</li>
+        <li>Is being profitable without VC funding a strength or a weakness in this market?</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 20 -->
+  <section class="slide" data-name="Takeaways">
+    <div class="inner">
+      <span class="eyebrow">19 · Key takeaways</span>
+      <h2>What to remember about agentic AI</h2>
+      <div class="grid g2">
+        <div class="panel"><h3>Agents act, chatbots answer</h3><p>The value is in completing and verifying multi-step work, often continuously.</p></div>
+        <div class="panel"><h3>Trust is the product</h3><p>Citations, validation, data sovereignty and multi-model checks matter as much as raw capability.</p></div>
+        <div class="panel"><h3>Pricing is new territory</h3><p>Agents consume compute and data per task, so token-based and dynamic pricing replace simple licences.</p></div>
+        <div class="panel"><h3>Platform battles move fast</h3><p>Open versus closed, store versus service, and funding strategy decide who wins, not just technology.</p></div>
+      </div>
+      <p class="small">Source: Nagle, Hoffmann, Ströhlein &amp; Pinckney, “AGENTS.inc: Pathways to Growth at an AI Startup,” HBS Case 9-724-444, rev. January 2025. This guide summarises the case; read the full case before class.</p>
+    </div>
+  </section>
+
+  </main>
+  <nav class="foot" aria-label="Slide controls">
+    <button class="nav" id="prev" type="button">← Prev</button>
+    <div class="prog" aria-hidden="true"><i id="pbar"></i></div>
+    <span class="count" id="count">1 / 20</span>
+    <button class="nav" id="next" type="button">Next →</button>
+  </nav>
+</div>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var n=slides.length, cur=0;
+  var prev=document.getElementById('prev'), next=document.getElementById('next');
+  var count=document.getElementById('count'), pbar=document.getElementById('pbar'), sname=document.getElementById('sname');
+  function show(i){
+    i=Math.max(0,Math.min(n-1,i)); cur=i;
+    slides.forEach(function(s,k){s.classList.toggle('on',k===i)});
+    slides[i].scrollTop=0;
+    count.textContent=(i+1)+' / '+n;
+    pbar.style.width=((i+1)/n*100)+'%';
+    sname.textContent=slides[i].getAttribute('data-name');
+    prev.disabled=i===0; next.disabled=i===n-1;
+    var h='#s'+(i+1); if(location.hash!==h){try{history.replaceState(null,'',h)}catch(e){}}
+  }
+  function fromHash(){var m=/^#s(\d+)$/.exec(location.hash);return m?parseInt(m[1],10)-1:0}
+  prev.addEventListener('click',function(){show(cur-1)});
+  next.addEventListener('click',function(){show(cur+1)});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||(e.key===' '&&!e.shiftKey)){e.preventDefault();show(cur+1)}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(cur-1)}
+    else if(e.key==='Home'){show(0)} else if(e.key==='End'){show(n-1)}
+  });
+  var sx=null,sy=null;
+  document.getElementById('stage').addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  document.getElementById('stage').addEventListener('touchend',function(e){
+    if(sx===null)return; var dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){show(cur+(dx<0?1:-1))} sx=null;
+  },{passive:true});
+  window.addEventListener('hashchange',function(){show(fromHash())});
+  show(fromHash());
+})();
+</script>
+
+</body></html>
